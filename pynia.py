@@ -109,7 +109,9 @@ class NiaData():
         wave = ones((140,410), dtype=int8)
         wave = dstack((wave*0,wave*0,wave*51))
         for i in range(410):
-            wave[int(data[i+102]),i,:] = [0,204,255]
+            wave_data_index = data[i+102]
+            if not math.isnan(wave_data_index):
+                wave[int(wave_data_index),i,:] = [0,204,255]
         return wave.tostring()
 
     def fourier(self):
@@ -138,6 +140,8 @@ class NiaData():
             # throw away NaN values that may occur due to adjusting the NIA
             if not math.isnan(finger_sum):
                 fingers.append(int(finger_sum))
+            else:
+                fingers.append(0)
         return self.Fourier_Data.tostring(),fingers
 
 nia = NIA()
