@@ -7,17 +7,17 @@ import threading
 
 
 class DeviceDescriptor:
-    def __init__(self, vendor_id, product_id, interface_id) :
+    def __init__(self, vendor_id, product_id, interface_id):
         self.vendor_id = vendor_id
         self.product_id = product_id
         self.interface_id = interface_id
 
-    def get_device(self) :
+    def get_device(self):
         buses = usb.busses()
-        for bus in buses :
-            for device in bus.devices :
-                if device.idVendor == self.vendor_id :
-                    if device.idProduct == self.product_id :
+        for bus in buses:
+            for device in bus.devices:
+                if device.idVendor == self.vendor_id:
+                    if device.idProduct == self.product_id:
                         return device
         return None
 
@@ -33,13 +33,13 @@ class NIA():
 
     device_descriptor = DeviceDescriptor(VENDOR_ID, PRODUCT_ID, INTERFACE_ID)
 
-    def __init__(self,) :
+    def __init__(self):
         # The actual device (PyUSB object)
         self.device = self.device_descriptor.get_device()
         # Handle that is used to communicate with device
         self.handle = None
 
-    def open(self) :
+    def open(self):
         """ Attaches the NIA interface"""
         self.device = self.device_descriptor.get_device()
         if not self.device:
@@ -71,7 +71,7 @@ class NIA():
 
     def bulk_read(self):
         """ Read data off the NIA from its internal buffer of up to 16 samples"""
-        read_bytes = self.handle.interruptRead(0x81,64,25);
+        read_bytes = self.handle.interruptRead(0x81, 64, 25);
         return read_bytes
 
 
@@ -81,7 +81,7 @@ class NiaData():
         self.Points = milliseconds/2
         self.Processed_Data = ones(4096, dtype=uint32)
         self.Raw_Data = zeros(10, dtype=uint32)
-        self.Fourier_Data = zeros((140,160), dtype=int8)
+        self.Fourier_Data = zeros((140, 160), dtype=int8)
 
     def get_data(self):
         """
@@ -97,8 +97,8 @@ class NiaData():
             temp = zeros(p, dtype=uint32)
             for col in range(p):
                 temp[col] = data[col*3+2]*65536 + data[col*3+1]*256 + data[col*3]
-            Raw_Data = append(Raw_Data,temp)
-        self.Processed_Data = append(self.Processed_Data,Raw_Data)[-4096:-1]
+            Raw_Data = append(Raw_Data, temp)
+        self.Processed_Data = append(self.Processed_Data, Raw_Data)[-4096:-1]
 
     def waveform(self):
         """
@@ -113,13 +113,13 @@ class NiaData():
         x_max = max(data)*1.1
         x_min = min(data)*0.9
         data = (140*(data-x_min)/(x_max-x_min)) #normalise with a bit of a window
-        wave = ones((140,410), dtype=int8)
-        wave = dstack((wave*0,wave*0,wave*51))
+        wave = ones((140, 410), dtype=int8)
+        wave = dstack((wave*0, wave*0, wave*51))
         for i in range(410):
             wave_data_index = data[i+102]
             # throw away NaN values that may occur due to adjusting the NIA
             if not math.isnan(wave_data_index):
-                wave[int(wave_data_index),i,:] = [0,204,255]
+                wave[int(wave_data_index), i, :] = [0, 204, 255]
         return wave.tostring()
 
     def fourier(self):
@@ -132,19 +132,19 @@ class NiaData():
             by the waves tuple. These, along with array of fourier data are
             returned to be plotted by pyglet
         """
-        self.Fourier_Data[1:140,:] = self.Fourier_Data[0:139,:]
+        self.Fourier_Data[1:140, :] = self.Fourier_Data[0:139, :]
         x = abs(fft.fftn(nia_data.Processed_Data*hanning(len(nia_data.Processed_Data))))[4:44]
         x_max = max(x)
         x_min = min(x)
         x = (255*(x-x_min)/(x_max-x_min))
         pointer = zeros((160), dtype=int8)
         pointer[(argmax(x))*4:(argmax(x))*4+4]= 255
-        y = vstack((x,x,x,x))
-        y = ravel(y,'F')
-        self.Fourier_Data[5,:] = y
-        self.Fourier_Data[0:4,:] = vstack((pointer,pointer,pointer,pointer))
+        y = vstack((x, x, x, x))
+        y = ravel(y, 'F')
+        self.Fourier_Data[5, :] = y
+        self.Fourier_Data[0:4, :] = vstack((pointer, pointer, pointer, pointer))
         fingers = []
-        waves = (6,9,12,15,20,25,30)
+        waves = (6, 9, 12, 15, 20, 25, 30)
         for i in range(6):
             finger_sum = sum(x[waves[i]:waves[i+1]])/100
             # throw away NaN values that may occur due to adjusting the NIA
@@ -152,7 +152,7 @@ class NiaData():
                 fingers.append(int(finger_sum))
             else:
                 fingers.append(0)
-        return self.Fourier_Data.tostring(),fingers
+        return self.Fourier_Data.tostring(), fingers
 
 nia = NIA()
 milliseconds = 100
@@ -171,16 +171,16 @@ def update(x):
     window.clear()
     data_thread = threading.Thread(target=nia_data.get_data)
     data_thread.start()
-    backgound.blit(0,0)
-    data,steps = nia_data.fourier()
-    image = pyglet.image.ImageData(160,140,'I', data)
+    backgound.blit(0, 0)
+    data, steps = nia_data.fourier()
+    image = pyglet.image.ImageData(160, 140, 'I', data)
     for i in range(6):  # this blits the brain-fingers blocks
         for j in range(steps[i]):
             step.blit(i*50+100, j*15+200)
-    image.blit(20,20)
+    image.blit(20, 20)
     data = nia_data.waveform()
-    image = pyglet.image.ImageData(410,140,'RGB', data)
-    image.blit(210,20)
+    image = pyglet.image.ImageData(410, 140, 'RGB', data)
+    image.blit(210, 20)
     data_thread.join()
 
 pyglet.clock.schedule(update)
