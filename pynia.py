@@ -1,6 +1,7 @@
 import pyglet
 from numpy import fft, zeros, uint32,int8, array, append,hanning,argmax,vstack,ravel,ones,dstack
 import sys
+import math
 import usb
 import threading
 
@@ -133,7 +134,10 @@ class NiaData():
         fingers = []
         waves = (6,9,12,15,20,25,30)
         for i in range(6):
-            fingers.append(int(sum(x[waves[i]:waves[i+1]])/100))
+            finger_sum = sum(x[waves[i]:waves[i+1]])/100
+            # throw away NaN values that may occur due to adjusting the NIA
+            if not math.isnan(finger_sum):
+                fingers.append(int(finger_sum))
         return self.Fourier_Data.tostring(),fingers
 
 nia = NIA()
