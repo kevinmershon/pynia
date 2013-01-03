@@ -24,7 +24,7 @@ class DeviceDescriptor:
 
 class NIA():
     """ Attaches the NIA device, and provides low level data collection"""
-    VENDOR_ID      = 0x1234 #: Vendor Id
+    VENDOR_ID    = 0x1234   #: Vendor Id
     PRODUCT_ID   = 0x0000   #: Product Id for the bridged usb cable
     INTERFACE_ID = 0        #: The interface we use to talk to the device
     BULK_IN_EP   = 0x83     #: Endpoint for Bulk reads
@@ -36,7 +36,7 @@ class NIA():
     def __init__(self,) :
         # The actual device (PyUSB object)
         self.device = self.device_descriptor.get_device()
-        # Handle that is used to communicate with device. Setup in L{open}
+        # Handle that is used to communicate with device
         self.handle = None
 
     def open(self) :
@@ -46,6 +46,8 @@ class NIA():
             print >> sys.stderr, "Cable isn't plugged in"
         try:
             self.handle = self.device.open()
+            # try to detach the interfaces from the kernel, silently ignoring
+            # failures if they are already detached
             try:
                 self.handle.detachKernelDriver(0)
             except Exception, e:
@@ -75,16 +77,19 @@ class NIA():
 
 class NiaData():
     """ Looks after the collection and processing of NIA data"""
-    def __init__(self,milliseconds) :
+    def __init__(self, milliseconds):
         self.Points = milliseconds/2
         self.Processed_Data = ones(4096, dtype=uint32)
         self.Raw_Data = zeros(10, dtype=uint32)
         self.Fourier_Data = zeros((140,160), dtype=int8)
 
     def get_data(self):
-        """ This function is called via threading, so that pyglet can plot the previous set of data
-        whist this function collects the new data. It sorts out the data into a list of the last
-        seconds worth of data (~4096 samples)"""
+        """
+            This function is called via threading, so that pyglet can plot the
+            previous set of data whilst this function collects the new data. It
+            sorts out the data into a list of the last second's worth of data
+            (~4096 samples)
+        """
         Raw_Data = array([])
         for a in range(self.Points):
             data = nia.bulk_read()
@@ -96,9 +101,11 @@ class NiaData():
         self.Processed_Data = append(self.Processed_Data,Raw_Data)[-4096:-1]
 
     def waveform(self):
-        """ This function takes a subset of the last second-worth of data,
-        filters out frequecies over 30 Herz, and returns image data in a string
-        for pyglet """
+        """
+            This function takes a subset of the last second-worth of data,
+            filters out frequecies over 30 Hertz, and returns image data in a
+            string for pyglet
+        """
         filter_over = 30
         data = fft.fftn(self.Processed_Data[::8]) #less data points = faster!
         data[filter_over:-filter_over] = 0 # Filter out higher frequencies
@@ -110,17 +117,20 @@ class NiaData():
         wave = dstack((wave*0,wave*0,wave*51))
         for i in range(410):
             wave_data_index = data[i+102]
+            # throw away NaN values that may occur due to adjusting the NIA
             if not math.isnan(wave_data_index):
                 wave[int(wave_data_index),i,:] = [0,204,255]
         return wave.tostring()
 
     def fourier(self):
-        """This function performs a fourier trasform on the last 140 samples taken
-        with a Hanning window, and adds the normalised results to an array. The highest
-        values is found and used to generate a marker to visualize the brains dominant frequency.
-        The FT is also partitioned to represent 6 groups of frequencies, 3 alpha and 3 beta,
-            as defined by the waves tuple. These, along with array of fourier data are returned to
-        be plotted by pyglet
+        """
+            This function performs a fourier trasform on the last 140 samples
+            taken with a Hanning window, and adds the normalised results to an
+            array. The highest values are found and used to generate a marker to
+            visualize the brain's dominant frequency. The FT is also partitioned
+            to represent 6 groups of frequencies, 3 alpha and 3 beta, as defined
+            by the waves tuple. These, along with array of fourier data are
+            returned to be plotted by pyglet
         """
         self.Fourier_Data[1:140,:] = self.Fourier_Data[0:139,:]
         x = abs(fft.fftn(nia_data.Processed_Data*hanning(len(nia_data.Processed_Data))))[4:44]
@@ -153,10 +163,11 @@ backgound = pyglet.image.load('images/pynia.png')
 step = pyglet.image.load('images/step.png')
 
 def update(x):
-    """ The main pyglet loop, this function starts a data collection thread, whilst
-    processing and displying the previously collected data. At the end of the loop the
-    threads are joined"""
-
+    """
+        The main pyglet loop. This function starts a data collection thread,
+        whilst processing and displying the previously collected data. At the
+        end of the loop the threads are joined
+    """
     window.clear()
     data_thread = threading.Thread(target=nia_data.get_data)
     data_thread.start()
