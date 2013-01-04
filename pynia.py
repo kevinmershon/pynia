@@ -153,10 +153,8 @@ class NiaData():
             # throw away NaN values that may occur due to adjusting the NIA
             if not math.isnan(finger_sum):
                 fingers.append(int(finger_sum))
-                print "finger " + str(i) + " = " + str(finger_sum)
             else:
                 fingers.append(0)
-                print "finger " + str(i) + " = 0"
         return self.Fourier_Data.tostring(), fingers
 
 def update(x):
