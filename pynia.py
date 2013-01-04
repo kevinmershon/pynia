@@ -43,7 +43,8 @@ class NIA():
         """ Attaches the NIA interface"""
         self.device = self.device_descriptor.get_device()
         if not self.device:
-            print >> sys.stderr, "Cable isn't plugged in"
+            print >> sys.stderr, "Failed to open NIA device. Cable isn't plugged in"
+            return False
         try:
             self.handle = self.device.open()
             # try to detach the interfaces from the kernel, silently ignoring
@@ -59,6 +60,8 @@ class NIA():
             self.handle.claimInterface(self.device_descriptor.interface_id)
         except usb.USBError, err:
             print >> sys.stderr, err
+
+        return True
 
     def close(self):
         """ Release device interface """
@@ -103,8 +106,8 @@ class NiaData():
     def waveform(self):
         """
             This function takes a subset of the last second-worth of data,
-            filters out frequecies over 30 Hertz, and returns image data in a
-            string for pyglet
+            filters out frequecies over 30 Hertz, and returns a matrix of pixel
+            colors as a string for pyglet to render.
         """
         filter_over = 30
         data = fft.fftn(self.Processed_Data[::8]) #less data points = faster!
@@ -150,17 +153,11 @@ class NiaData():
             # throw away NaN values that may occur due to adjusting the NIA
             if not math.isnan(finger_sum):
                 fingers.append(int(finger_sum))
+                print "finger " + str(i) + " = " + str(finger_sum)
             else:
                 fingers.append(0)
+                print "finger " + str(i) + " = 0"
         return self.Fourier_Data.tostring(), fingers
-
-nia = NIA()
-milliseconds = 100
-nia.open()
-nia_data = NiaData(milliseconds)
-window = pyglet.window.Window()
-backgound = pyglet.image.load('images/pynia.png')
-step = pyglet.image.load('images/step.png')
 
 def update(x):
     """
@@ -183,7 +180,23 @@ def update(x):
     image.blit(210, 20)
     data_thread.join()
 
-pyglet.clock.schedule(update)
-pyglet.app.run()
+if __name__ == "__main__":
+    """
+        The main function opens the NIA, creates a pyglet window, and then
+        enters the main pyglet loop (update). When the main pyglet loop exits,
+        the NIA is closed out and the programs exits successfully.
+    """
+    nia = NIA()
+    if not nia.open():
+        sys.exit(1)
 
-nia.close()
+    milliseconds = 100
+    nia_data = NiaData(milliseconds)
+    window = pyglet.window.Window()
+    backgound = pyglet.image.load('images/pynia.png')
+    step = pyglet.image.load('images/step.png')
+    pyglet.clock.schedule(update)
+    pyglet.app.run()
+
+    nia.close()
+    sys.exit(0)
