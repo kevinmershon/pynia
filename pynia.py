@@ -157,6 +157,11 @@ class NiaData():
                 fingers.append(0)
         return self.Fourier_Data.tostring(), fingers
 
+# global scope stuff
+backgound = pyglet.image.load('images/pynia.png')
+step = pyglet.image.load('images/step.png')
+nia_data = None
+
 def update(x):
     """
         The main pyglet loop. This function starts a data collection thread,
@@ -164,18 +169,34 @@ def update(x):
         end of the loop the threads are joined
     """
     window.clear()
+
+    # kick-off processing data from the NIA
     data_thread = threading.Thread(target=nia_data.get_data)
     data_thread.start()
+
+    # fill in the background image
     backgound.blit(0, 0)
+
+    # get the fourier data from the NIA
     data, steps = nia_data.fourier()
+
+    # render an Intensity-based graph of the data
     image = pyglet.image.ImageData(160, 140, 'I', data)
+    image.blit(20, 20)
+
+    # render step scales of the 'brain-fingers'
     for i in range(6):  # this blits the brain-fingers blocks
         for j in range(steps[i]):
             step.blit(i*50+100, j*15+200)
-    image.blit(20, 20)
+
+    # get a waveform of the last 1 second of data
     data = nia_data.waveform()
+
+    # render an RGB graph of the waveform data
     image = pyglet.image.ImageData(410, 140, 'RGB', data)
     image.blit(210, 20)
+
+    # wait for the next batch of data to come in
     data_thread.join()
 
 if __name__ == "__main__":
@@ -184,17 +205,20 @@ if __name__ == "__main__":
         enters the main pyglet loop (update). When the main pyglet loop exits,
         the NIA is closed out and the programs exits successfully.
     """
+    # open the NIA, or exit with a failure code
     nia = NIA()
     if not nia.open():
         sys.exit(1)
 
-    milliseconds = 100
+    # start collecting data
+    milliseconds = 50
     nia_data = NiaData(milliseconds)
-    window = pyglet.window.Window()
-    backgound = pyglet.image.load('images/pynia.png')
-    step = pyglet.image.load('images/step.png')
+
+    # open a window and schedule continuous updates
+    window = pyglet.window.Window(caption="pyNIA")
     pyglet.clock.schedule(update)
     pyglet.app.run()
 
+    # when pyglet exits, close out the NIA and exit gracefully
     nia.close()
     sys.exit(0)
