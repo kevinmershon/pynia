@@ -163,8 +163,8 @@ class NiaData():
         return self.Fourier_Data.tostring(), fingers
 
 # global scope stuff
-backgound = pyglet.image.load('images/pynia.png')
-step = pyglet.image.load('images/step.png')
+backgound = pyglet.image.load('static/images/pynia.png')
+step = pyglet.image.load('static/images/step.png')
 nia_data = None
 
 def update(x):
