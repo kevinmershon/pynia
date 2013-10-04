@@ -10,14 +10,11 @@ urls = (
 # global scope stuff
 nia = None
 nia_data = None
-updater = None
-
-brain_fingers = None
 
 class index:
     def GET(self):
         render = web.template.render("templates/")
-        return render.index()
+        return render.index(web.brain_fingers)
 
 class Updater:
     def update(self):
@@ -27,7 +24,11 @@ class Updater:
             data_thread.start()
 
             # get the fourier data from the NIA
-            data, brain_fingers = nia_data.fourier(nia_data)
+            data, steps = nia_data.fourier(nia_data)
+            web.brain_fingers = steps
+
+            # get a waveform of the last 1 second of data
+            data = nia_data.waveform()
 
             # wait for the next batch of data to come in
             data_thread.join()
