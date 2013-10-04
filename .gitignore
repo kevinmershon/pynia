@@ -1,2 +1,5 @@
 # Ignore swapfiles
 *.swp
+
+# Ignore ctags tags
+.tags
