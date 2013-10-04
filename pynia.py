@@ -77,7 +77,6 @@ class NIA():
         read_bytes = self.handle.interruptRead(0x81, 64, 25);
         return read_bytes
 
-
 class NiaData():
     """ Looks after the collection and processing of NIA data"""
     def __init__(self, milliseconds):
@@ -85,6 +84,7 @@ class NiaData():
         self.Processed_Data = ones(4096, dtype=uint32)
         self.Raw_Data = zeros(10, dtype=uint32)
         self.Fourier_Data = zeros((140, 160), dtype=int8)
+        self.AccessDeniedError = False
 
     def get_data(self):
         """
@@ -94,13 +94,18 @@ class NiaData():
             (~4096 samples)
         """
         Raw_Data = array([])
-        for a in range(self.Points):
-            data = nia.bulk_read()
-            p = int(data[54])
-            temp = zeros(p, dtype=uint32)
-            for col in range(p):
-                temp[col] = data[col*3+2]*65536 + data[col*3+1]*256 + data[col*3]
-            Raw_Data = append(Raw_Data, temp)
+        try:
+            for a in range(self.Points):
+                data = nia.bulk_read()
+                p = int(data[54])
+                temp = zeros(p, dtype=uint32)
+                for col in range(p):
+                    temp[col] = data[col*3+2]*65536 + data[col*3+1]*256 + data[col*3]
+                Raw_Data = append(Raw_Data, temp)
+        except usb.USBError, err:
+            print >> sys.stderr, "Failed to access NIA device: Access Denied"
+            print >> sys.stderr, "If you're on GNU/Linux, see README Troubleshooting section for details"
+            self.AccessDeniedError = True
         self.Processed_Data = append(self.Processed_Data, Raw_Data)[-4096:-1]
 
     def waveform(self):
@@ -198,6 +203,10 @@ def update(x):
 
     # wait for the next batch of data to come in
     data_thread.join()
+
+    # exit if we cannot read data from the device
+    if nia_data.AccessDeniedError:
+        sys.exit(1)
 
 if __name__ == "__main__":
     """
