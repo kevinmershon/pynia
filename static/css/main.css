@@ -19,6 +19,7 @@ div#console-wrapper {
 #console {
     border: 8px solid #3a3a3a;
     background-color: black;
+    color: white;
     height: 100px;
     margin-top: 1px;
     margin-left: 2px;
