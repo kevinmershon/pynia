@@ -1,5 +1,9 @@
+# Ignore python binaries
+*.pyc
+
 # Ignore swapfiles
 *.swp
+*.swo
 
 # Ignore ctags tags
 .tags
