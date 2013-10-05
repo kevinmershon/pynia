@@ -1,10 +1,12 @@
+import json
 import sys
 import threading
 import web
 import nia as NIA
 
 urls = (
-    '/', 'index'
+    '/', 'index',
+    '/get_steps', 'get_steps'
 )
 
 # global scope stuff
@@ -15,6 +17,11 @@ class index:
     def GET(self):
         render = web.template.render("templates/")
         return render.index(web.brain_fingers)
+
+class get_steps:
+    def GET(self):
+        web.header("Content-Type", "application/json")
+        return json.dumps(web.brain_fingers)
 
 class Updater:
     def update(self):
