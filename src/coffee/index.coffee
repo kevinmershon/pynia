@@ -12,8 +12,8 @@ Pynia = {
     y: 210
   frequencyGraphArea:
     height: 141
-    width: 420
-    x: 180
+    width: 410
+    x: 190
     y: 210
 }
 
