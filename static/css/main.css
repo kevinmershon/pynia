@@ -7,9 +7,16 @@ div#main {
     background-image: url("../images/pynia.png");
     display: block;
     height: 481px;
-    width: 641px;
     margin: auto;
-    text-align: center;
+    width: 641px;
+}
+
+#canvas {
+    height: 351px;
+    position: relative;
+    top: 110px;
+    left: 21px;
+    width: 600px;
 }
 
 div#console-wrapper {
