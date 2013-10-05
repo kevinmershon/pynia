@@ -7,3 +7,6 @@
 
 # Ignore ctags tags
 .tags
+
+# Compiled Javascript
+static/js/*.js
