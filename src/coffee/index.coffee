@@ -1,6 +1,6 @@
 # main object for storing state/whatever
 Pynia = {
-  stepBlockArea:
+  histogramArea:
     height: 181
     width: 600
     x: 0
@@ -28,10 +28,10 @@ $(document).ready ->
     Pynia.context.beginPath()
     Pynia.context.fillStyle = "#000630"
     Pynia.context.rect(
-      Pynia.stepBlockArea.x,
-      Pynia.stepBlockArea.y,
-      Pynia.stepBlockArea.width,
-      Pynia.stepBlockArea.height)
+      Pynia.histogramArea.x,
+      Pynia.histogramArea.y,
+      Pynia.histogramArea.width,
+      Pynia.histogramArea.height)
     Pynia.context.fill()
 
     Pynia.context.beginPath()
