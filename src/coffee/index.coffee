@@ -63,13 +63,14 @@ $(document).ready ->
       Pynia.frequencyGraphArea.height)
     Pynia.context.fill()
 
-  Pynia.drawBackground()
-
   Pynia.drawSteps = (steps) ->
     $.ajax
       url: "/get_steps"
       success: (response) ->
         $("#console").html("")
+
+        # clear the canvas
+        Pynia.drawBackground()
 
         # draw integer scale steps for each frequency range as a histogram
         _.each response, (it, idx) ->
