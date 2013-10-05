@@ -15,7 +15,18 @@ Pynia = {
     width: 410
     x: 190
     y: 210
+  frequencyRangePrefixes: [
+    " 06-09hz => ",
+    " 09-12hz => ",
+    " 12-15hz => ",
+    " 15-20hz => ",
+    " 20-25hz => ",
+    " 25-30hz => "
+  ]
+  stepImage: new Image()
 }
+
+Pynia.stepImage.src = "/static/images/step.png"
 
 $(document).ready ->
   # add canvas for steps
@@ -55,29 +66,21 @@ $(document).ready ->
   Pynia.drawBackground()
 
   Pynia.drawSteps = (steps) ->
-    stepImage = new Image()
-    stepImage.src = "/static/images/step.png"
-    prefixes = [
-      " 06-09hz => ",
-      " 09-12hz => ",
-      " 12-15hz => ",
-      " 15-20hz => ",
-      " 20-25hz => ",
-      " 25-30hz => "
-    ]
-
     $.ajax
       url: "/get_steps"
       success: (response) ->
         $("#console").html("")
-        _.each response, (it, idx) ->
-          $("#console").append("#{prefixes[idx]} #{it}\n")
 
-          for height in [1..it]
-            Pynia.context.drawImage(
-              stepImage,
-              idx * 50 + 160,
-              height * -15 + 170)
+        # draw integer scale steps for each frequency range as a histogram
+        _.each response, (it, idx) ->
+          $("#console").append("#{Pynia.frequencyRangePrefixes[idx]} #{it}\n")
+
+          if it > 0
+            for height in [1..it]
+              Pynia.context.drawImage(
+                Pynia.stepImage,
+                idx * 50 + 160,
+                height * -15 + 170)
 
         # redraw
         setTimeout ->
