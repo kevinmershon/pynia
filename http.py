@@ -1,3 +1,4 @@
+import base64
 import json
 import sys
 import threading
@@ -21,7 +22,11 @@ class index:
 class get_steps:
     def GET(self):
         web.header("Content-Type", "application/json")
-        return json.dumps(web.brain_fingers)
+        data = {
+            "brain_fingers": web.brain_fingers,
+            "waveform": base64.b64encode(web.waveform)
+        }
+        return json.dumps(data)
 
 class Updater:
     def update(self):
@@ -35,7 +40,7 @@ class Updater:
             web.brain_fingers = steps
 
             # get a waveform of the last 1 second of data
-            data = nia_data.waveform()
+            web.waveform = nia_data.waveform()
 
             # wait for the next batch of data to come in
             data_thread.join()

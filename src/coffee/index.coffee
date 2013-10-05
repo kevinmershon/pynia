@@ -55,7 +55,7 @@ $(document).ready ->
     Pynia.context.fill()
 
     Pynia.context.beginPath()
-    Pynia.context.fillStyle = "green"
+    Pynia.context.fillStyle = "white"
     Pynia.context.rect(
       Pynia.frequencyGraphArea.x,
       Pynia.frequencyGraphArea.y,
@@ -73,7 +73,7 @@ $(document).ready ->
         Pynia.drawBackground()
 
         # draw integer scale steps for each frequency range as a histogram
-        _.each response, (it, idx) ->
+        _.each response.brain_fingers, (it, idx) ->
           $("#console").append("#{Pynia.frequencyRangePrefixes[idx]} #{it}\n")
 
           if it > 0
@@ -82,6 +82,30 @@ $(document).ready ->
                 Pynia.stepImage,
                 idx * 50 + 160,
                 height * -15 + 170)
+
+        # base64 decode the RGB waveform and draw it
+        waveformRGB = atob(response.waveform)
+        waveform = Pynia.context.createImageData(410,140)
+        for i in [0..410]
+          for j in [0..140] by 3
+            r = parseInt(waveformRGB[i*j]) >> 16
+            if isNaN(r)
+              r = 0
+            waveform.data[i*j] = r
+            g = parseInt(waveformRGB[i*j+1]) >> 8
+            if isNaN(g)
+              g = 0
+            waveform.data[i*j+1] = g
+            b = parseInt(waveformRGB[i*j+2])
+            if isNaN(b)
+              b = 0
+            waveform.data[i*j+2] = b
+
+        sample = Pynia.context.getImageData(0, 0, 15, 15)
+        Pynia.context.putImageData(
+          waveform,
+          Pynia.frequencyGraphArea.x,
+          Pynia.frequencyGraphArea.y)
 
         # redraw
         setTimeout ->
