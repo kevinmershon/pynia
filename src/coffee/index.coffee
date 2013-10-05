@@ -63,7 +63,7 @@ $(document).ready ->
       Pynia.frequencyGraphArea.height)
     Pynia.context.fill()
 
-  Pynia.drawSteps = (steps) ->
+  Pynia.updateLoop = ->
     $.ajax
       url: "/get_steps"
       success: (response) ->
@@ -85,7 +85,7 @@ $(document).ready ->
 
         # redraw
         setTimeout ->
-          Pynia.drawSteps()
-        , 250
+          Pynia.updateLoop()
+        , 50
 
-  Pynia.drawSteps()
+  Pynia.updateLoop()
