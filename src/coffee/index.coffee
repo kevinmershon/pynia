@@ -26,7 +26,7 @@ $(document).ready ->
   Pynia.drawBackground = ->
     # fill background color
     Pynia.context.beginPath()
-    Pynia.context.fillStyle = "red"
+    Pynia.context.fillStyle = "#000630"
     Pynia.context.rect(
       Pynia.stepBlockArea.x,
       Pynia.stepBlockArea.y,
@@ -53,3 +53,35 @@ $(document).ready ->
     Pynia.context.fill()
 
   Pynia.drawBackground()
+
+  Pynia.drawSteps = (steps) ->
+    stepImage = new Image()
+    stepImage.src = "/static/images/step.png"
+    prefixes = [
+      " 06-09hz => ",
+      " 09-12hz => ",
+      " 12-15hz => ",
+      " 15-20hz => ",
+      " 20-25hz => ",
+      " 25-30hz => "
+    ]
+
+    $.ajax
+      url: "/get_steps"
+      success: (response) ->
+        $("#console").html("")
+        _.each response, (it, idx) ->
+          $("#console").append("#{prefixes[idx]} #{it}\n")
+
+          for height in [1..it]
+            Pynia.context.drawImage(
+              stepImage,
+              idx * 50 + 160,
+              height * -15 + 170)
+
+        # redraw
+        setTimeout ->
+          Pynia.drawSteps()
+        , 250
+
+  Pynia.drawSteps()
