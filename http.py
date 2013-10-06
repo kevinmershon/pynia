@@ -23,8 +23,7 @@ class get_steps:
     def GET(self):
         web.header("Content-Type", "application/json")
         data = {
-            "brain_fingers": web.brain_fingers,
-            "waveform": base64.b64encode(web.waveform)
+            "brain_fingers": web.brain_fingers
         }
         return json.dumps(data)
 
@@ -38,9 +37,6 @@ class Updater:
             # get the fourier data from the NIA
             data, steps = nia_data.fourier(nia_data)
             web.brain_fingers = steps
-
-            # get a waveform of the last 1 second of data
-            web.waveform = nia_data.waveform()
 
             # wait for the next batch of data to come in
             data_thread.join()
