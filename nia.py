@@ -157,7 +157,7 @@ class NiaData():
             finger_sum = sum(x[waves[i]:waves[i+1]])/100
             # throw away NaN values that may occur due to adjusting the NIA
             if not math.isnan(finger_sum):
-                fingers.append(int(finger_sum))
+                fingers.append(finger_sum)
             else:
                 fingers.append(0)
         return self.Fourier_Data.tostring(), fingers

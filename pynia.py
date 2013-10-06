@@ -33,7 +33,7 @@ def update(x):
 
     # render step scales of the 'brain-fingers'
     for i in range(6):  # this blits the brain-fingers blocks
-        for j in range(steps[i]):
+        for j in range(int(steps[i])):
             step.blit(i*50+100, j*15+200)
 
     # get a waveform of the last 1 second of data
