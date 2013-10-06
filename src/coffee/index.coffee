@@ -124,19 +124,25 @@ $(document).ready ->
             Xcenter + (baseSize+5*response.brain_fingers[i]) * Math.cos(i * 2 * Math.PI / 6),
             Ycenter + (baseSize+5*response.brain_fingers[i]) * Math.sin(i * 2 * Math.PI / 6))
 
-        blueishness = parseInt((60 - (response.brain_fingers[0] +
-                                      response.brain_fingers[1] +
-                                      response.brain_fingers[2] +
-                                      response.brain_fingers[3] +
-                                      response.brain_fingers[4] +
-                                      response.brain_fingers[5])) / 60.0 * 255.0)
-        greenishness = parseInt((response.brain_fingers[0] +
-                                 response.brain_fingers[1] +
-                                 response.brain_fingers[2]) / 30.0 * 255.0)
-        reddishness = parseInt((response.brain_fingers[3] +
-                                response.brain_fingers[4] +
-                                response.brain_fingers[5]) / 30.0 * 255.0)
-        hexColor = ((reddishness << 16) + (greenishness << 8) + blueishness).toString(16)
+        alphaSum = _.reduce(
+          response.brain_fingers.slice(0, 3),
+          (memo, it) ->
+            memo + it
+          , 0)
+        betaSum = _.reduce(
+          response.brain_fingers.slice(3, 6),
+          (memo, it) ->
+            memo + it
+          , 0)
+        blueishness = parseInt((60 - (alphaSum + betaSum)) / 60.0 * 255.0)
+        greenishness = parseInt(alphaSum / 30.0 * 255.0)
+        reddishness = parseInt(betaSum / 30.0 * 255.0)
+        hexColor = (
+          (reddishness << 16) +
+          (greenishness << 8) +
+          blueishness
+        ).toString(16)
+        hexColor = "000000".substring(0, 6-hexColor.length) + hexColor
         Pynia.context.fillStyle = "#" + hexColor
         Pynia.context.fill()
 
