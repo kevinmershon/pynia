@@ -80,10 +80,11 @@ $(document).ready ->
         # clear the canvas
         Pynia.drawBackground()
 
-        # draw integer scale steps for each frequency range as a histogram
         _.each response.brain_fingers, (it, idx) ->
+          # output the values of each frequency range to the console
           $("#console").append("#{Pynia.frequencyRangePrefixes[idx]} #{it}\n")
 
+          # draw a moving historical line graph of each frequency range
           Pynia.frequencyHistories[idx].unshift(it)
           if (Pynia.frequencyHistories[idx].length > 410)
             Pynia.frequencyHistories[idx].pop()
@@ -99,6 +100,7 @@ $(document).ready ->
                 10 + Pynia.frequencyGraphArea.y + 20*idx + 10-Pynia.frequencyHistories[idx][i+1])
             Pynia.context.stroke()
 
+          # draw integer scale steps for each frequency range as a histogram
           if it >= 1
             for scale in [1..parseInt(it)]
               Pynia.context.drawImage(
