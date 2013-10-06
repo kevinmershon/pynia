@@ -16,12 +16,12 @@ Pynia = {
     x: 190
     y: 210
   frequencyRangePrefixes: [
-    " 06-09hz => ",
-    " 09-12hz => ",
-    " 12-15hz => ",
-    " 15-20hz => ",
-    " 20-25hz => ",
-    " 25-30hz => "
+    " (Alpha Low)  06-09hz => ",
+    " (Alpha Med)  09-12hz => ",
+    " (Alpha High) 12-15hz => ",
+    " (Beta Low)   15-20hz => ",
+    " (Beta Med)   20-25hz => ",
+    " (Beta High)  25-30hz => "
   ]
   stepImage: new Image()
   frequencyHistories: [
