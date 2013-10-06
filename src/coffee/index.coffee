@@ -5,7 +5,7 @@ Pynia = {
     width: 600
     x: 0
     y: 0
-  spectographArea:
+  hexagonArea:
     height: 141
     width: 160
     x: 0
@@ -54,12 +54,12 @@ $(document).ready ->
     Pynia.context.fill()
 
     Pynia.context.beginPath()
-    Pynia.context.fillStyle = "white"
+    Pynia.context.fillStyle = "black"
     Pynia.context.rect(
-      Pynia.spectographArea.x,
-      Pynia.spectographArea.y,
-      Pynia.spectographArea.width,
-      Pynia.spectographArea.height)
+      Pynia.hexagonArea.x,
+      Pynia.hexagonArea.y,
+      Pynia.hexagonArea.width,
+      Pynia.hexagonArea.height)
     Pynia.context.fill()
 
     Pynia.context.beginPath()
@@ -107,6 +107,39 @@ $(document).ready ->
                 Pynia.stepImage,
                 idx * 50 + 160,
                 scale * -15 + 170)
+
+        # draw a colored hexagonal shape using the frequency scales to mutate
+        # the shape. redder is more beta (active), greener is more calm (alpha)
+        baseSize = 20
+        Xcenter = Pynia.hexagonArea.x + Pynia.hexagonArea.width/2
+        Ycenter = Pynia.hexagonArea.y + Pynia.hexagonArea.height/2
+
+        Pynia.context.beginPath()
+        Pynia.context.moveTo(
+          Xcenter + (baseSize+5*response.brain_fingers[5]) * Math.cos(6 * 2 * Math.PI / 6),
+          Ycenter + (baseSize+5*response.brain_fingers[5]) * Math.sin(6 * 2 * Math.PI / 6))
+
+        for i in [1..6]
+          Pynia.context.lineTo(
+            Xcenter + (baseSize+5*response.brain_fingers[i]) * Math.cos(i * 2 * Math.PI / 6),
+            Ycenter + (baseSize+5*response.brain_fingers[i]) * Math.sin(i * 2 * Math.PI / 6))
+
+        blueishness = parseInt((60 - (response.brain_fingers[0] +
+                                      response.brain_fingers[1] +
+                                      response.brain_fingers[2] +
+                                      response.brain_fingers[3] +
+                                      response.brain_fingers[4] +
+                                      response.brain_fingers[5])) / 60.0 * 255.0)
+        greenishness = parseInt((response.brain_fingers[0] +
+                                 response.brain_fingers[1] +
+                                 response.brain_fingers[2]) / 30.0 * 255.0)
+        reddishness = parseInt((response.brain_fingers[3] +
+                                response.brain_fingers[4] +
+                                response.brain_fingers[5]) / 30.0 * 255.0)
+        hexColor = ((reddishness << 16) + (greenishness << 8) + blueishness).toString(16)
+        Pynia.context.fillStyle = "#" + hexColor
+        Pynia.context.fill()
+
 
         # redraw
         setTimeout ->
