@@ -17,7 +17,7 @@ nia_data = None
 class index:
     def GET(self):
         render = web.template.render("templates/")
-        return render.index(web.brain_fingers)
+        return render.index()
 
 class get_steps:
     def GET(self):
