@@ -1,0 +1,35 @@
+body {
+    background-color: black;
+    margin: auto;
+}
+
+div#main {
+    background-image: url("../images/pynia.png");
+    display: block;
+    height: 481px;
+    margin: auto;
+    width: 641px;
+}
+
+#canvas {
+    height: 351px;
+    position: relative;
+    top: 110px;
+    left: 21px;
+    width: 600px;
+}
+
+div#console-wrapper {
+    text-align: center;
+}
+
+#console {
+    border: 8px solid #3a3a3a;
+    background-color: black;
+    color: white;
+    font-family: monospace;
+    height: 100px;
+    margin-top: 1px;
+    margin-left: 2px;
+    width: 618px;
+}
