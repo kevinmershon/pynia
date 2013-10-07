@@ -12,7 +12,7 @@
 * http://sourceforge.net/projects/numpy/
 * http://webpy.org/
 
-On Mac it's simply enough to run `pip install pyglet pyusb numpy web.py`. On GNU/Linux I had to compile and install the libusb code. Also, see the [Troubleshooting - Access Denied section](#accessDenied).
+On Mac it's simply enough to run `pip install pyglet pyusb numpy web.py`. On GNU/Linux I had to compile and install the libusb code. Also, see the [Troubleshooting - Access Denied section](#access-denied-warning-on-gnulinux).
 
 ## Usage
 There are two user interfaces for pyNIA: pyglet and HTML5.
@@ -38,7 +38,7 @@ I ran into quite a few problems getting **pynia** working. David Ng's project
 had 2 fairly different versions of the code. I'm going to be developing
 primarily off the version **0.0.1** codebase because it required less
 modifications to make it functional, and it also has much better documentation.
-#### <a id="acceessDenied"></a>"Access Denied" warning on GNU/Linux
+#### "Access Denied" warning on GNU/Linux
 By default, libusb doesn't provide read/write access to USB devices. In order to
 get **pynia** working on Linux without root privileges, you need to add an
 exception for the NIA to your udev rules in `/etc/udev/rules.d` (a sample file
