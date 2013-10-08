@@ -1,18 +1,22 @@
 import base64
 import json
+import redis as Redis
 import sys
 import threading
+import time
 import web
 import nia as NIA
 
 urls = (
     '/', 'index',
-    '/get_steps', 'get_steps'
+    '/get_steps', 'get_steps',
+    '/log_event', 'log_event'
 )
 
 # global scope stuff
 nia = None
 nia_data = None
+redis = None
 
 class index:
     def GET(self):
@@ -27,6 +31,35 @@ class get_steps:
         }
         return json.dumps(data)
 
+class log_event:
+    def GET(self):
+        input = web.input(_method='get')
+        now = time.time()
+        event_name = "event." + input.event_name
+
+        # create a record of this event
+        event = {
+            "time": now,
+            "type": event_name,
+            "non_matches": [],
+            "matches": []
+        }
+
+        # if this event has occurred before, identify the last 4 brainfinger
+        # records before the event as a match (fitness=100), and all
+        # brainfingers before those 4 (but after the last event) as a non-match
+        # (fitness=0)
+        last_events = web.redis.zrevrange(event_name, 0, 0)
+        if len(last_events) == 1:
+            last_event = eval(last_events[0])
+            possible_matches = web.redis.zrevrangebyscore("brainfingers",
+                 now, last_event["time"])
+            event["matches"] = possible_matches[:4]
+            event["non_matches"] = possible_matches[4:]
+
+        # store the event to redis
+        web.redis.zadd(event_name, now, event)
+
 class Updater:
     def update(self):
         while True:
@@ -38,6 +71,10 @@ class Updater:
             data, steps = nia_data.fourier(nia_data)
             web.brain_fingers = steps
 
+            # store the brainfingers to redis as a timestamped sorted set
+            now = time.time()
+            redis.zadd("brainfingers", now, steps)
+
             # wait for the next batch of data to come in
             data_thread.join()
 
@@ -47,6 +84,10 @@ class Updater:
 
 if __name__ == "__main__":
     app = web.application(urls, globals())
+
+    # start up redis
+    redis = Redis.StrictRedis(host='localhost', port=6379, db=0)
+    web.redis = redis
 
     # open the NIA, or exit with a failure code
     nia = NIA.NIA()
