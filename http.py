@@ -9,7 +9,8 @@ import nia as NIA
 
 urls = (
     '/', 'index',
-    '/get_steps', 'get_steps'
+    '/get_steps', 'get_steps',
+    '/log_event', 'log_event'
 )
 
 # global scope stuff
@@ -29,6 +30,15 @@ class get_steps:
             "brain_fingers": web.brain_fingers
         }
         return json.dumps(data)
+
+class log_event:
+    def GET(self):
+        input = web.input(_method='get')
+        now = time.time()
+        web.redis.zadd("event", now, {
+            "time": now,
+            "type": input.event_name
+        })
 
 class Updater:
     def update(self):
@@ -57,6 +67,7 @@ if __name__ == "__main__":
 
     # start up redis
     redis = Redis.StrictRedis(host='localhost', port=6379, db=0)
+    web.redis = redis
 
     # open the NIA, or exit with a failure code
     nia = NIA.NIA()
