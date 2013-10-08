@@ -41,6 +41,7 @@ class Updater:
             data, steps = nia_data.fourier(nia_data)
             web.brain_fingers = steps
 
+            # store the brainfingers to redis as a timestamped sorted set
             now = time.time()
             redis.zadd("brainfingers", now, steps)
 
