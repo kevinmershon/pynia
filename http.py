@@ -1,7 +1,9 @@
 import base64
 import json
+import redis as Redis
 import sys
 import threading
+import time
 import web
 import nia as NIA
 
@@ -13,6 +15,7 @@ urls = (
 # global scope stuff
 nia = None
 nia_data = None
+redis = None
 
 class index:
     def GET(self):
@@ -38,6 +41,9 @@ class Updater:
             data, steps = nia_data.fourier(nia_data)
             web.brain_fingers = steps
 
+            now = time.time()
+            redis.zadd("brainfingers", now, steps)
+
             # wait for the next batch of data to come in
             data_thread.join()
 
@@ -47,6 +53,9 @@ class Updater:
 
 if __name__ == "__main__":
     app = web.application(urls, globals())
+
+    # start up redis
+    redis = Redis.StrictRedis(host='localhost', port=6379, db=0)
 
     # open the NIA, or exit with a failure code
     nia = NIA.NIA()
@@ -67,4 +76,5 @@ if __name__ == "__main__":
 
     # when web.py exits, close out the NIA and exit gracefully
     nia.close()
+    redis.disconnect()
     sys.exit(0)
