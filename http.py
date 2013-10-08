@@ -77,5 +77,4 @@ if __name__ == "__main__":
 
     # when web.py exits, close out the NIA and exit gracefully
     nia.close()
-    redis.disconnect()
     sys.exit(0)
