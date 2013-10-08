@@ -11,8 +11,10 @@
 * http://sourceforge.net/projects/pyusb/
 * http://sourceforge.net/projects/numpy/
 * http://webpy.org/
+* http://redis.io/
+* https://github.com/andymccurdy/redis-py
 
-On Mac it's simply enough to run `pip install pyglet pyusb numpy web.py`. On GNU/Linux I had to compile and install the libusb code. Also, see the [Troubleshooting - Access Denied section](#access-denied-warning-on-gnulinux).
+On Mac it's simply enough to run `pip install pyglet pyusb numpy web.py redis`. On GNU/Linux I had to compile and install the libusb code. Also, see the [Troubleshooting - Access Denied section](#access-denied-warning-on-gnulinux).
 
 ## Usage
 There are two user interfaces for pyNIA: pyglet and HTML5.
@@ -29,8 +31,9 @@ I never got pyglet working on Mac, but it works fine on GNU/Linux. Simply run `p
 [Click here for the annotated version](/screenshots/pynia-http-annotated.png). The HTML5 interface has the same histogram as the pyglet version at top, but the other two images are different. The bottom left has a distorted hexagon I have nicknamed the Brain Shape, where the distortion to each vertex is determined by a specific BrainFinger. The hexagon is bluer when all frequencies are low, redder when beta frequencies are high, and greener when alpha frequencies are high. The bottom right is a historical graph of all six BrainFinger values, instead of a single compiled waveform.
 
 #### running it
-1. You will need to install CoffeeScript, have `coffee` on your path, and run `batch/coffee-compile.sh`. Alternatively, you can use [Coffee2JS](http://js2coffee.org/#coffee2js) to convert `/src/coffee/index.coffee` and save the output to `static/js/index.js`.
-2. Once you have compiled the CoffeeScript code, run `python http.py` and visit `http://localhost:8080`.
+1. Start `redis`
+2. You will need to install CoffeeScript, have `coffee` on your path, and run `batch/coffee-compile.sh`. Alternatively, you can use [Coffee2JS](http://js2coffee.org/#coffee2js) to convert `/src/coffee/index.coffee` and save the output to `static/js/index.js`.
+3. Once you have compiled the CoffeeScript code, run `python http.py` and visit `http://localhost:8080`.
 
 # Troubleshooting
 #### Versions
