@@ -77,6 +77,40 @@ def get_chromosomes(event_type):
 
     return eval(chromosomes[0])
 
+def get_probability_ranges_for_chromosomes(chromosomes, scores):
+    """
+        Compute interval ranges from 0 to 1.0 for the fitness of each chromosome
+        relative to the overall fitness of the batch based on their total
+        scores.
+    """
+
+    # compute probability intervals for each individual based on its fitness
+    # relative to the whole (roulette wheel selection)
+    total_fitness = float(sum(scores))
+    relative_fitnesses = [s/total_fitness
+                              for s in scores]
+    probabilities = [sum(relative_fitnesses[:i+1])
+                         for i in range(len(chromosomes))]
+
+    return probabilities
+
+def get_weighted_random_chromosome(chromosomes, probabilities):
+    """
+        Get a random chromosome based on the specified probability intervals
+    """
+    # choose a random number
+    randomness = random.random()
+
+    # find the chromosome which falls within the probability range of randomness
+    random_index = [i for i in range(0, len(chromosomes))
+                          if (probabilities[i] <= randomness and
+                              (i+1 == len(chromosomes) or
+                               probabilities[i+1] > randomness))][0]
+    # print("random:", randomness,
+    #       ", index:", random_index,
+    #       ", probability:", probabilities[random_index])
+
+    return chromosomes[random_index], random_index
 
 def evolve(event_type):
     # find all events from redis for the specified event type
@@ -94,7 +128,11 @@ def evolve(event_type):
     # compute the scores for each chromosome (and throw away imaginary parts)
     scores = [compute_chromosome_score(x, event).real
                   for x in chromosomes]
-    return scores
+
+    probabilities = get_probability_ranges_for_chromosomes(chromosomes, scores)
+    c, idx = get_weighted_random_chromosome(chromosomes, probabilities)
+    print idx
+
 
 def eval_chromosome(chromosome, dataset):
     """
