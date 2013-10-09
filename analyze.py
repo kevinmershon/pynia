@@ -2,6 +2,7 @@ import math
 import random
 import redis as Redis
 
+redis = None
 population_size = 100
 crossover_rate = 0.7
 mutation_rate = 0.001
@@ -62,6 +63,22 @@ class Chromosome:
         return " ".join([Chromosome.GENE_CODES[x]
                              for x in self.get_valid_genes()])
 
+def get_last_event(event_type):
+    last_events = redis.zrevrange(event_type, 0, 0)
+    if len(last_events) == 0:
+        return None
+
+    return last_events[0]
+
+def get_chromosomes(event_type):
+    chromosomes = redis.zrevrange("chromosomes." + event_type, 0, 0)
+    if len(chromosomes) == 0:
+        return []
+
+    return chromosomes[0]
+
+
 if __name__ == "__main__":
+    redis = Redis.StrictRedis(host='localhost', port=6379, db=0)
     c = Chromosome()
     print c
