@@ -83,14 +83,11 @@ def get_probability_ranges_for_chromosomes(chromosomes, scores):
         relative to the overall fitness of the batch based on their total
         scores.
     """
-
-    # compute probability intervals for each individual based on its fitness
-    # relative to the whole (roulette wheel selection)
     total_fitness = float(sum(scores))
     relative_fitnesses = [s/total_fitness
                               for s in scores]
     probabilities = [sum(relative_fitnesses[:i+1])
-                         for i in range(len(chromosomes))]
+                         for i in range(population_size)]
 
     return probabilities
 
@@ -102,9 +99,9 @@ def get_weighted_random_chromosome(chromosomes, probabilities):
     randomness = random.random()
 
     # find the chromosome which falls within the probability range of randomness
-    random_index = [i for i in range(0, len(chromosomes))
+    random_index = [i for i in range(0, population_size)
                           if (probabilities[i] <= randomness and
-                              (i+1 == len(chromosomes) or
+                              (i+1 == population_size or
                                probabilities[i+1] > randomness))][0]
     # print("random:", randomness,
     #       ", index:", random_index,
@@ -129,9 +126,18 @@ def evolve(event_type):
     scores = [compute_chromosome_score(x, event).real
                   for x in chromosomes]
 
+    # compute probability ranges for each chromosome in the population based on
+    # its fitness relative to the fitness of the entire population
     probabilities = get_probability_ranges_for_chromosomes(chromosomes, scores)
-    c, idx = get_weighted_random_chromosome(chromosomes, probabilities)
-    print idx
+    for i in range(population_size):
+        # select two chromosomes from the old population proportionally relative
+        # to how fit they are
+        c_a, idx_a = get_weighted_random_chromosome(chromosomes, probabilities)
+        c_b, idx_b = get_weighted_random_chromosome(chromosomes, probabilities)
+        print "a:", scores[idx_a], ", b:", scores[idx_b]
+
+        # TODO -- crossover and mutate the chromosomes and add both to the new
+        # population
 
 
 def eval_chromosome(chromosome, dataset):
