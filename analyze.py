@@ -96,18 +96,24 @@ def evolve(event_type):
     return scores
 
 def eval_chromosome(chromosome, dataset):
+    """
+        Compute the score of this chromosome against the specified dataset
+    """
     chromosome_str = str(chromosome)
     alpha = dataset[0:3]
     beta = dataset[3:6]
 
     try:
-        score = eval(chromosome_str, { "alpha": alpha, "beta": beta })
-        print score
-        return score
+        dataset_score = eval(chromosome_str, { "alpha": alpha, "beta": beta })
+        return dataset_score
     except Exception, ex:
         return 0
 
 def compute_chromosome_score(chromosome, event):
+    """
+        Compute the score of this chromosome against all datasets associated
+        with this event, match or non-match
+    """
     print "evaluating chromosome:", chromosome
 
     # Ideally we want the lowest latency we can get for interpreting signals.
