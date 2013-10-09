@@ -37,6 +37,11 @@ class Chromosome:
         self.genes = [random.randint(0, len(Chromosome.GENE_CODES)-1)
                           for x in range(Chromosome.CHROMOSOME_SIZE)]
 
+    def clone(parent):
+        child = Chromosome()
+        child.genes = list(parent.genes)
+        return child
+
     def get_valid_genes(self):
         """
             Get the valid genetic components of this Chromosome. Alternate
@@ -58,6 +63,24 @@ class Chromosome:
             valid_genes.pop()
 
         return valid_genes
+
+    def get_genome(self):
+        genome = ""
+        for i in range(Chromosome.CHROMOSOME_SIZE):
+            genestring = (("1" if self.genes[i] & 0b1000 else "0") +
+                          ("1" if self.genes[i] & 0b0100 else "0") +
+                          ("1" if self.genes[i] & 0b0010 else "0") +
+                          ("1" if self.genes[i] & 0b0001 else "0"))
+
+            genome += genestring
+
+        return genome
+
+    def put_genome(self, genome):
+        gene = 0
+        for i in xrange(0, len(genome), 4):
+            self.genes[gene] = int(genome[i:i+4], 2)
+            gene += 1
 
     def __str__(self):
         return " ".join([Chromosome.GENE_CODES[x]
