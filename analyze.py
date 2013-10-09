@@ -78,6 +78,10 @@ def get_chromosomes(event_type):
     return chromosomes[0]
 
 
+def eval_chromosome(chromosome, dataset):
+    # TODO -- math
+    return 1
+
 if __name__ == "__main__":
     redis = Redis.StrictRedis(host='localhost', port=6379, db=0)
     c = Chromosome()
