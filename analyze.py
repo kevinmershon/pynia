@@ -87,11 +87,12 @@ def evolve(event_type):
 
     # if no chromosomes exist, generate chromosomes at random
     if (len(chromosomes) == 0):
-        chromosomes = [Chromosome()
-                           for x in range(population_size)]
+        chromosomes = []
+        for x in range(population_size):
+            chromosomes.append(Chromosome())
 
     # compute the scores for each chromosome
-    scores = [compute_chromosome_score(x, eval(event))
+    scores = [compute_chromosome_score(x, event)
                   for x in chromosomes]
     return scores
 
@@ -114,8 +115,6 @@ def compute_chromosome_score(chromosome, event):
         Compute the score of this chromosome against all datasets associated
         with this event, match or non-match
     """
-    print "evaluating chromosome:", chromosome
-
     # Ideally we want the lowest latency we can get for interpreting signals.
     # This means we want to favor chromosomes which eval highly on the 0th match
     # (the most recent) and decreasingly favor older matches.
