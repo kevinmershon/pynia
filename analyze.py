@@ -10,7 +10,7 @@ mutation_rate = 0.001
 class Chromosome:
     CHROMOSOME_SIZE = 128
     GENE_CODES = [
-        "0",                        # 00 = 0
+        "0.01",                     # 00 = 0
         "10",                       # 01 = 10
         "alpha[0]",                 # 02 = alpha low
         "alpha[1]",                 # 03 = alpha medium
