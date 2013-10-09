@@ -91,8 +91,8 @@ def evolve(event_type):
         for x in range(population_size):
             chromosomes.append(Chromosome())
 
-    # compute the scores for each chromosome
-    scores = [compute_chromosome_score(x, event)
+    # compute the scores for each chromosome (and throw away imaginary parts)
+    scores = [compute_chromosome_score(x, event).real
                   for x in chromosomes]
     return scores
 
