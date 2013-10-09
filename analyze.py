@@ -68,15 +68,32 @@ def get_last_event(event_type):
     if len(last_events) == 0:
         return None
 
-    return last_events[0]
+    return eval(last_events[0])
 
 def get_chromosomes(event_type):
     chromosomes = redis.zrevrange("chromosomes." + event_type, 0, 0)
     if len(chromosomes) == 0:
         return []
 
-    return chromosomes[0]
+    return eval(chromosomes[0])
 
+
+def evolve(event_type):
+    # find all events from redis for the specified event type
+    event = get_last_event(event_type)
+
+    # try to get the last batch of chromosomes from redis if we have them
+    chromosomes = get_chromosomes(event_type)
+
+    # if no chromosomes exist, generate chromosomes at random
+    if (len(chromosomes) == 0):
+        chromosomes = [Chromosome()
+                           for x in range(population_size)]
+
+    # compute the scores for each chromosome
+    scores = [compute_chromosome_score(x, eval(event))
+                  for x in chromosomes]
+    return scores
 
 def eval_chromosome(chromosome, dataset):
     # TODO -- math
