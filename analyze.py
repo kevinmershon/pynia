@@ -122,10 +122,13 @@ def get_weighted_random_chromosome(chromosomes, probabilities):
     randomness = random.random()
 
     # find the chromosome which falls within the probability range of randomness
-    random_index = [i for i in range(0, population_size)
-                          if (probabilities[i] <= randomness and
-                              (i+1 == population_size or
-                               probabilities[i+1] > randomness))][0]
+    random_index = 0
+    for i in range(population_size):
+        if i+1 == population_size or (probabilities[i] <= randomness and
+                                      probabilities[i+1] > randomness):
+            random_index = i
+            break
+
     # print("random:", randomness,
     #       ", index:", random_index,
     #       ", probability:", probabilities[random_index])
@@ -149,19 +152,61 @@ def evolve(event_type):
     scores = [compute_chromosome_score(x, event).real
                   for x in chromosomes]
 
+    # start a new population
+    next_generation = []
+
     # compute probability ranges for each chromosome in the population based on
     # its fitness relative to the fitness of the entire population
     probabilities = get_probability_ranges_for_chromosomes(chromosomes, scores)
-    for i in range(population_size):
+    for i in range(population_size/2):
         # select two chromosomes from the old population proportionally relative
         # to how fit they are
-        c_a, idx_a = get_weighted_random_chromosome(chromosomes, probabilities)
-        c_b, idx_b = get_weighted_random_chromosome(chromosomes, probabilities)
-        print "a:", scores[idx_a], ", b:", scores[idx_b]
+        parent_a, idx_a = get_weighted_random_chromosome(chromosomes, probabilities)
+        parent_b, idx_b = get_weighted_random_chromosome(chromosomes, probabilities)
 
-        # TODO -- crossover and mutate the chromosomes and add both to the new
-        # population
+        # crossover and mutate the chromosomes and add both to the new population
+        child_a, child_b = mutate_chromosomes(parent_a, parent_b)
+        next_generation.append(child_a)
+        next_generation.append(child_b)
 
+    return next_generation
+
+def mutate_chromosomes(parent_a, parent_b):
+    child_a = Chromosome.clone(parent_a)
+    child_b = Chromosome.clone(parent_b)
+
+    bits_a = parent_a.get_genome()
+    bits_b = parent_b.get_genome()
+
+    # given a crossover rate (0.7 is recommended) crossover bits between
+    # each chromosome at a random point forward
+    if random.random() < crossover_rate:
+        # swap bitstrings starting at a random bit position, to the end of the
+        # string
+        random_index = random.randint(0, len(bits_a))
+        bits_a = (parent_a.get_genome()[:random_index] +
+                  parent_b.get_genome()[random_index:])
+        bits_b = (parent_b.get_genome()[:random_index] +
+                  parent_a.get_genome()[random_index:])
+
+    # given the mutation rate (.001 is recommended), swap the bit
+    for i in range(len(bits_a)):
+        if random.random() < mutation_rate:
+            if bits_a[i] == "0":
+                bits_a = bits_a[:i] + "1" + bits_a[i+1:]
+            else:
+                bits_a = bits_a[:i] + "0" + bits_a[i+1:]
+    for j in range(len(bits_b)):
+        if random.random() < mutation_rate:
+            if bits_b[i] == "0":
+                bits_b = bits_b[:i] + "1" + bits_b[i+1:]
+            else:
+                bits_b = bits_b[:i] + "0" + bits_b[i+1:]
+
+    # save the chromosome to the new population
+    child_a.put_genome(bits_a)
+    child_b.put_genome(bits_b)
+    return child_a, child_b
 
 def eval_chromosome(chromosome, dataset):
     """
