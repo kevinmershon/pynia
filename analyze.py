@@ -231,16 +231,15 @@ def mutate_chromosomes(parent_a, parent_b):
     child_b.put_genome(bits_b)
     return child_a, child_b
 
-def eval_chromosome(chromosome, dataset):
+def eval_chromosome(expr, dataset):
     """
         Compute the score of this chromosome against the specified dataset
     """
-    chromosome_str = str(chromosome)
     alpha = dataset[0:3]
     beta = dataset[3:6]
 
     try:
-        dataset_score = eval(chromosome_str, { "alpha": alpha, "beta": beta })
+        dataset_score = expr(alpha, beta)
         return dataset_score
     except Exception, ex:
         return 0
@@ -250,19 +249,20 @@ def compute_chromosome_score(chromosome, event):
         Compute the score of this chromosome against all datasets associated
         with this event, match or non-match
     """
+    expr = eval("lambda alpha, beta: " + str(chromosome))
     # Ideally we want the lowest latency we can get for interpreting signals.
     # This means we want to favor chromosomes which eval highly on the 0th match
     # (the most recent) and decreasingly favor older matches.
-    score = (50 * eval_chromosome(chromosome, eval(event["matches"][0])) +
-             30 * eval_chromosome(chromosome, eval(event["matches"][1])) +
-             15 * eval_chromosome(chromosome, eval(event["matches"][2])) +
-             05 * eval_chromosome(chromosome, eval(event["matches"][3])))
+    score = (50 * eval_chromosome(expr, eval(event["matches"][0])) +
+             30 * eval_chromosome(expr, eval(event["matches"][1])) +
+             15 * eval_chromosome(expr, eval(event["matches"][2])) +
+             05 * eval_chromosome(expr, eval(event["matches"][3])))
 
     # Additionally, to rule out chromosomes which yield false positives, we want
     # to also favor chromosomes which eval minimally on all the non-matches
     # test each chromosome to see how good it is at solving the problem
     for i in range(len(event["non_matches"])):
-        score -= eval_chromosome(chromosome, eval(event["non_matches"][i]))
+        score -= eval_chromosome(expr, eval(event["non_matches"][i]))
 
     return score
 
