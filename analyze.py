@@ -96,23 +96,33 @@ def evolve(event_type):
     return scores
 
 def eval_chromosome(chromosome, dataset):
-    # TODO -- math
-    return 1
+    chromosome_str = str(chromosome)
+    alpha = dataset[0:3]
+    beta = dataset[3:6]
+
+    try:
+        score = eval(chromosome_str, { "alpha": alpha, "beta": beta })
+        print score
+        return score
+    except Exception, ex:
+        return 0
 
 def compute_chromosome_score(chromosome, event):
+    print "evaluating chromosome:", chromosome
+
     # Ideally we want the lowest latency we can get for interpreting signals.
     # This means we want to favor chromosomes which eval highly on the 0th match
     # (the most recent) and decreasingly favor older matches.
-    score = (50 * eval_chromosome(chromosome, event["matches"][0]) +
-             30 * eval_chromosome(chromosome, event["matches"][1]) +
-             15 * eval_chromosome(chromosome, event["matches"][2]) +
-             05 * eval_chromosome(chromosome, event["matches"][3]))
+    score = (50 * eval_chromosome(chromosome, eval(event["matches"][0])) +
+             30 * eval_chromosome(chromosome, eval(event["matches"][1])) +
+             15 * eval_chromosome(chromosome, eval(event["matches"][2])) +
+             05 * eval_chromosome(chromosome, eval(event["matches"][3])))
 
     # Additionally, to rule out chromosomes which yield false positives, we want
     # to also favor chromosomes which eval minimally on all the non-matches
     # test each chromosome to see how good it is at solving the problem
     for i in range(len(event["non_matches"])):
-        score -= eval_chromosome(chromosome, event["non_matches"][i])
+        score -= eval_chromosome(chromosome, eval(event["non_matches"][i]))
 
     return score
 
