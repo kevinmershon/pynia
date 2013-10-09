@@ -92,7 +92,18 @@ def get_last_event(event_type):
     if len(last_events) == 0:
         return None
 
-    return eval(last_events[0])
+    event = eval(last_events[0])
+    matches = []
+    non_matches = []
+    for i in range(len(event["matches"])):
+        matches.append(eval(event["matches"][i]))
+    for j in range(len(event["non_matches"])):
+        non_matches.append(eval(event["non_matches"][j]))
+
+    event["matches"] = matches
+    event["non_matches"] = non_matches
+
+    return event
 
 def get_chromosomes(event_type):
     chromosomes = []
@@ -151,6 +162,9 @@ def get_weighted_random_chromosome(chromosomes, probabilities):
 def evolve_event(event_type):
     # find all events from redis for the specified event type
     event = get_last_event(event_type)
+
+    if event is None or len(event["matches"]) == 0:
+        return None
 
     # try to get the last batch of chromosomes from redis if we have them
     chromosomes = get_chromosomes(event_type)
@@ -250,19 +264,20 @@ def compute_chromosome_score(chromosome, event):
         with this event, match or non-match
     """
     expr = eval("lambda alpha, beta: " + str(chromosome))
+
     # Ideally we want the lowest latency we can get for interpreting signals.
     # This means we want to favor chromosomes which eval highly on the 0th match
     # (the most recent) and decreasingly favor older matches.
-    score = (50 * eval_chromosome(expr, eval(event["matches"][0])) +
-             30 * eval_chromosome(expr, eval(event["matches"][1])) +
-             15 * eval_chromosome(expr, eval(event["matches"][2])) +
-             05 * eval_chromosome(expr, eval(event["matches"][3])))
+    score = (50 * eval_chromosome(expr, event["matches"][0]) +
+             30 * eval_chromosome(expr, event["matches"][1]) +
+             15 * eval_chromosome(expr, event["matches"][2]) +
+             05 * eval_chromosome(expr, event["matches"][3]))
 
     # Additionally, to rule out chromosomes which yield false positives, we want
     # to also favor chromosomes which eval minimally on all the non-matches
     # test each chromosome to see how good it is at solving the problem
     for i in range(len(event["non_matches"])):
-        score -= eval_chromosome(expr, eval(event["non_matches"][i]))
+        score -= eval_chromosome(expr, event["non_matches"][i])
 
     return score
 
