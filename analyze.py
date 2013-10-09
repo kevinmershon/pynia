@@ -222,9 +222,9 @@ def mutate_chromosomes(parent_a, parent_b):
     for j in range(len(bits_b)):
         if random.random() < mutation_rate:
             if bits_b[i] == "0":
-                bits_b = bits_b[:i] + "1" + bits_b[i+1:]
+                bits_b = bits_b[:j] + "1" + bits_b[j+1:]
             else:
-                bits_b = bits_b[:i] + "0" + bits_b[i+1:]
+                bits_b = bits_b[:j] + "0" + bits_b[j+1:]
 
     # save the chromosome to the new population
     child_a.put_genome(bits_a)
