@@ -1,5 +1,6 @@
 import math
 import random
+import time
 import redis as Redis
 
 redis = None
@@ -78,10 +79,9 @@ class Chromosome:
         return genome
 
     def put_genome(self, genome):
-        gene = 0
+        self.genes = []
         for i in xrange(0, len(genome), 4):
-            self.genes[gene] = int(genome[i:i+4], 2)
-            gene += 1
+            self.genes.append(int(genome[i:i+4], 2))
 
     def __str__(self):
         return " ".join([Chromosome.GENE_CODES[x]
@@ -95,11 +95,23 @@ def get_last_event(event_type):
     return eval(last_events[0])
 
 def get_chromosomes(event_type):
-    chromosomes = redis.zrevrange("chromosomes." + event_type, 0, 0)
-    if len(chromosomes) == 0:
-        return []
+    chromosomes = []
+    genomes = redis.zrevrange("chromosomes." + event_type, 0, 0)
 
-    return eval(chromosomes[0])
+    if len(genomes) == 1:
+        genomes = eval(genomes[0])
+        for x in genomes:
+            c = Chromosome(create_genes=False)
+            c.put_genome(x)
+            chromosomes.append(c)
+
+    return chromosomes
+
+def put_chromosomes(event_type, chromosomes):
+    now = time.time()
+    redis.zadd("chromosomes." + event_type,
+               now,
+               [x.get_genome() for x in chromosomes])
 
 def get_probability_ranges_for_chromosomes(chromosomes, scores):
     """
@@ -148,7 +160,15 @@ def evolve_event(event_type):
         chromosomes = []
         for x in range(population_size):
             chromosomes.append(Chromosome(create_genes=True))
-    return evolve_generation(event, chromosomes)
+
+    # evolve the generation
+    chromosomes = evolve_generation(event, chromosomes)
+
+    # store to redis
+    put_chromosomes(event_type, chromosomes)
+
+    return chromosomes
+
 
 def evolve_generation(event, chromosomes):
     # compute the scores for each chromosome (and throw away imaginary parts)
@@ -249,13 +269,6 @@ def compute_chromosome_score(chromosome, event):
 if __name__ == "__main__":
     redis = Redis.StrictRedis(host='localhost', port=6379, db=0)
 
-    event = get_last_event("event.up_arrow")
-    chromosomes = []
-    for x in range(population_size):
-        chromosomes.append(Chromosome(create_genes=True))
-
-    for i in range(4):
-        chromosomes = evolve_generation(event, chromosomes)
-
-    for x in chromosomes:
+    generation = evolve_event("event.up_arrow")
+    for x in generation:
         print x
