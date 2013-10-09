@@ -135,7 +135,7 @@ def get_weighted_random_chromosome(chromosomes, probabilities):
 
     return chromosomes[random_index], random_index
 
-def evolve(event_type):
+def evolve_event(event_type):
     # find all events from redis for the specified event type
     event = get_last_event(event_type)
 
@@ -147,7 +147,9 @@ def evolve(event_type):
         chromosomes = []
         for x in range(population_size):
             chromosomes.append(Chromosome())
+    return evolve_generation(event, chromosomes)
 
+def evolve_generation(event, chromosomes):
     # compute the scores for each chromosome (and throw away imaginary parts)
     scores = [compute_chromosome_score(x, event).real
                   for x in chromosomes]
