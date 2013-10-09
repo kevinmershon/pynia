@@ -82,6 +82,23 @@ def eval_chromosome(chromosome, dataset):
     # TODO -- math
     return 1
 
+def compute_chromosome_score(chromosome, event):
+    # Ideally we want the lowest latency we can get for interpreting signals.
+    # This means we want to favor chromosomes which eval highly on the 0th match
+    # (the most recent) and decreasingly favor older matches.
+    score = (50 * eval_chromosome(chromosome, event["matches"][0]) +
+             30 * eval_chromosome(chromosome, event["matches"][1]) +
+             15 * eval_chromosome(chromosome, event["matches"][2]) +
+             05 * eval_chromosome(chromosome, event["matches"][3]))
+
+    # Additionally, to rule out chromosomes which yield false positives, we want
+    # to also favor chromosomes which eval minimally on all the non-matches
+    # test each chromosome to see how good it is at solving the problem
+    for i in range(len(event["non_matches"])):
+        score -= eval_chromosome(chromosome, event["non_matches"][i])
+
+    return score
+
 if __name__ == "__main__":
     redis = Redis.StrictRedis(host='localhost', port=6379, db=0)
     c = Chromosome()
