@@ -30,15 +30,16 @@ class Chromosome:
     NUMBER_GENES = range(0, 11)
     MATH_GENES = range(11, 15)
 
-    def __init__(self):
+    def __init__(self, create_genes):
         """
             Create a Chromosome with random genes
         """
-        self.genes = [random.randint(0, len(Chromosome.GENE_CODES)-1)
-                          for x in range(Chromosome.CHROMOSOME_SIZE)]
+        if create_genes:
+            self.genes = [random.randint(0, len(Chromosome.GENE_CODES)-1)
+                              for x in range(Chromosome.CHROMOSOME_SIZE)]
 
     def clone(parent):
-        child = Chromosome()
+        child = Chromosome(create_genes=False)
         child.genes = list(parent.genes)
         return child
 
@@ -146,7 +147,7 @@ def evolve_event(event_type):
     if (len(chromosomes) == 0):
         chromosomes = []
         for x in range(population_size):
-            chromosomes.append(Chromosome())
+            chromosomes.append(Chromosome(create_genes=True))
     return evolve_generation(event, chromosomes)
 
 def evolve_generation(event, chromosomes):
@@ -247,5 +248,14 @@ def compute_chromosome_score(chromosome, event):
 
 if __name__ == "__main__":
     redis = Redis.StrictRedis(host='localhost', port=6379, db=0)
-    c = Chromosome()
-    print c
+
+    event = get_last_event("event.up_arrow")
+    chromosomes = []
+    for x in range(population_size):
+        chromosomes.append(Chromosome(create_genes=True))
+
+    for i in range(4):
+        chromosomes = evolve_generation(event, chromosomes)
+
+    for x in chromosomes:
+        print x
