@@ -100,3 +100,19 @@ Pynia.initializeGraphics = ->
     hexColor = "000000".substring(0, 6-hexColor.length) + hexColor
     Pynia.context.fillStyle = "#" + hexColor
     Pynia.context.fill()
+
+  # set up the requestAnimationFrame helper
+  requestAnimationFrame = window.requestAnimationFrame ||
+    window.mozRequestAnimationFrame ||
+    window.webkitRequestAnimationFrame ||
+    window.msRequestAnimationFrame
+  window.requestAnimationFrame = requestAnimationFrame
+
+  # set up a function for drawing each frame
+  Pynia.drawFrame = ->
+    Pynia.drawBackground()
+    Pynia.drawHistogram(Pynia.brainFingers)
+    Pynia.drawBrainShape(Pynia.brainFingers)
+    Pynia.drawFrequencyHistorics(Pynia.brainFingers)
+
+    window.requestAnimationFrame(Pynia.drawFrame)

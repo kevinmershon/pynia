@@ -1,5 +1,6 @@
 # main object for storing state/whatever
 Pynia = {
+  brainFingers: [0,0,0,0,0,0]
   histogramArea:
     height: 181
     width: 600
@@ -43,18 +44,12 @@ $(document).ready ->
     $.ajax
       url: "/get_steps"
       success: (response) ->
-        $("#console").html("")
-
-        # clear the canvas
-        Pynia.drawBackground()
-
         # output the values of each frequency range to the console
+        $("#console").html("")
         _.each response.brain_fingers, (it, idx) ->
           $("#console").append("#{Pynia.frequencyRangePrefixes[idx]} #{it}\n")
 
-        Pynia.drawHistogram(response.brain_fingers)
-        Pynia.drawBrainShape(response.brain_fingers)
-        Pynia.drawFrequencyHistorics(response.brain_fingers)
+        Pynia.brainFingers = response.brain_fingers
 
         # redraw
         setTimeout ->
@@ -62,3 +57,4 @@ $(document).ready ->
         , 50
 
   Pynia.updateLoop()
+  Pynia.drawFrame()
