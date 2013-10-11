@@ -38,6 +38,7 @@ Pynia = {
 Pynia.stepImage.src = "/static/images/step.png"
 
 $(document).ready ->
+  Pynia.initializeInput()
   Pynia.initializeGraphics()
 
   Pynia.updateLoop = ->

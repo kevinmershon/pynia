@@ -35,12 +35,12 @@ class log_event:
     def GET(self):
         input = web.input(_method='get')
         now = time.time()
-        event_name = "event." + input.event_name
+        event_type = "event." + input.event_type
 
         # create a record of this event
         event = {
             "time": now,
-            "type": event_name,
+            "type": event_type,
             "non_matches": [],
             "matches": []
         }
@@ -49,7 +49,7 @@ class log_event:
         # records before the event as a match (fitness=100), and all
         # brainfingers before those 4 (but after the last event) as a non-match
         # (fitness=0)
-        last_events = web.redis.zrevrange(event_name, 0, 0)
+        last_events = web.redis.zrevrange(event_type, 0, 0)
         if len(last_events) == 1:
             last_event = eval(last_events[0])
             possible_matches = web.redis.zrevrangebyscore("brainfingers",
@@ -58,7 +58,7 @@ class log_event:
             event["non_matches"] = possible_matches[4:]
 
         # store the event to redis
-        web.redis.zadd(event_name, now, event)
+        web.redis.zadd(event_type, now, event)
 
 class Updater:
     def update(self):
